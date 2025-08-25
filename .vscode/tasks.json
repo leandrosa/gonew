@@ -1,0 +1,50 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "echo",
+            "type": "shell",
+            "command": "echo Hello"
+        },
+        {
+            "label": "Go: New Project from template",
+            "type": "shell",
+            "command": "gonew",
+            "args": [
+                "github.com/leandrosa/gonew/${input:template-proj}",
+                "${input:module}"
+            ],
+            "options": {
+                "env": {
+                    "PATH": "${env:PATH}:${env:HOME}/go/bin"
+                }
+            },
+            "problemMatcher": [],
+            "icon": {
+                "id": "project",
+                "color": "terminal.ansiGreen"
+            }
+        },
+    ],
+    "inputs": [
+        {
+            "id": "template-proj",
+            "description": "Select the template for the project",
+            "default": "helloWorld",
+            "type": "pickString",
+            "options": [
+                "helloWorld",
+                "api",
+                "awsLambdas"
+            ]
+        },
+        {
+            "id": "module",
+            "description": "Module url",
+            "default": "example.com/user/<module-name>",
+            "type": "promptString"
+        },
+    ]
+}
