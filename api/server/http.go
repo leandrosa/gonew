@@ -1,9 +1,14 @@
 package server
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -48,12 +53,50 @@ func AddHandlerMessage(route string, message string) {
 }
 
 func RunServer(server *http.Server) {
-	fmt.Println("Starting server")
-	address := fmt.Sprintf("Addr: %s", server.Addr)
-	fmt.Println(address)
+	startServer(server)
+}
 
-	log.Println("main: running simple server on addr", server.Addr)
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("main: couldn't start simple server: %v\n", err)
+// startServer implementing graceful shutdown
+// reference: https://dev.to/yanev/a-deep-dive-into-graceful-shutdown-in-go-484a
+func startServer(server *http.Server) {
+	serverError := make(chan error, 1)
+
+	go func() {
+		log.Printf("Server is running on %s", getFullAddress(server))
+		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			serverError <- err
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-serverError:
+		log.Printf("Server error: %v", err)
+	case sig := <-stop:
+		log.Printf("Received shutdown signal: %v", sig)
 	}
+
+	log.Println("Server is shutting down...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server shutdown error: %v", err)
+		return
+	}
+
+	log.Println("Server exited properly")
+}
+
+func getFullAddress(server *http.Server) string {
+	addr := server.Addr
+
+	// If addr starts with ":", assume localhost
+	if addr[0] == ':' {
+		return "http://localhost" + addr
+	}
+	return "http://" + addr
 }
