@@ -9,7 +9,7 @@
             "command": "echo Hello"
         },
         {
-            "label": "Go: New Project from template",
+            "label": "Gonew: New Project from template",
             "type": "shell",
             "command": "gonew",
             "args": [
@@ -24,6 +24,37 @@
             "problemMatcher": [],
             "icon": {
                 "id": "project",
+                "color": "terminal.ansiGreen"
+            }
+        },
+        {
+            "label": "Go mod: update go version in go.mod",
+            "type": "shell",
+            "command": "gonew",
+            "args": [
+                "go mod edit -go $(go env GOVERSION | sed 's/^go//')"
+            ],
+            "options": {
+                "env": {
+                    "PATH": "${env:PATH}:${env:HOME}/go/bin"
+                }
+            },
+            "problemMatcher": [],
+            "icon": {
+                "id": "project",
+                "color": "terminal.ansiGreen"
+            }
+        },
+        {
+            "label": "Gonew: New Project and update go mod",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Gonew: New Project from template",
+                "Go mod: update go version in go.mod"
+            ],
+            "problemMatcher": [],
+            "icon": {
+                "id": "debug-rerun",
                 "color": "terminal.ansiGreen"
             }
         },
