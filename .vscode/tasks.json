@@ -9,12 +9,12 @@
             "command": "echo Hello"
         },
         {
-            "label": "Gonew: New Project from template",
+            "label": "Gonew: Create new project from template",
             "type": "shell",
             "command": "gonew",
             "args": [
                 "github.com/leandrosa/gonew/${input:template-proj}",
-                "${input:module}"
+                "${input:module-url}/${input:module-name}",
             ],
             "options": {
                 "env": {
@@ -28,12 +28,9 @@
             }
         },
         {
-            "label": "Go mod: update go version in go.mod",
+            "label": "Go mod: update go.mod with current go version",
             "type": "shell",
-            "command": "gonew",
-            "args": [
-                "go mod edit -go $(go env GOVERSION | sed 's/^go//')"
-            ],
+            "command": "go mod edit -go $(go env GOVERSION | sed 's/^go//') ${input:module-name}/go.mod",
             "options": {
                 "env": {
                     "PATH": "${env:PATH}:${env:HOME}/go/bin"
@@ -46,11 +43,11 @@
             }
         },
         {
-            "label": "Gonew: New Project and update go mod",
+            "label": "Gonew: Create new Project and update go module",
             "dependsOrder": "sequence",
             "dependsOn": [
-                "Gonew: New Project from template",
-                "Go mod: update go version in go.mod"
+                "Gonew: Create new project from template",
+                "Go mod: update go.mod with current go version"
             ],
             "problemMatcher": [],
             "icon": {
@@ -72,9 +69,15 @@
             ]
         },
         {
-            "id": "module",
+            "id": "module-url",
             "description": "Module url",
-            "default": "example.com/user/<module-name>",
+            "default": "example.com/user",
+            "type": "promptString"
+        },
+        {
+            "id": "module-name",
+            "description": "Modul Name",
+            "default": "<module-name>",
             "type": "promptString"
         },
     ]
