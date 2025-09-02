@@ -19,9 +19,21 @@ To create a project using the template you should use the bellow command.
 gonew github.com/leandrosa/gonew/<template_folder> <module_destine>
 ```
 
+Currently there are 3 templates available, that is also the folder name:
+
+- api
+- awsLambdas
+- helloWorld
+
 Example:
 To create a project using the helloWorld template, you can use the bellow example:
 
 ``` bash
 gonew github.com/leandrosa/gonew/helloWorld mytest.com/myhelloWorld
+```
+
+Update `go.mod` with the current go version
+
+``` bash
+go mod edit -go $(go env GOVERSION | sed 's/^go//')
 ```
