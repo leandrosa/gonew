@@ -1,0 +1,59 @@
+# Variables
+@protocol=http
+@hostname = localhost
+@port = 8080
+@host = {{hostname}}:{{port}}
+@url = {{protocol}}://{{host}}
+@contentType = application/json
+
+### get root
+GET {{url}}/
+
+###
+GET {{url}}/index
+
+### Get All articles
+# @name getAll
+GET {{url}}/articles
+
+### Get first article
+@firstArticleId = {{getAll.response.body.$.[0].id}}
+GET {{url}}/articles/{{firstArticleId}}
+
+###
+# Uses prompt to fill the variable
+# article 1 (8617bf49-39a9-4268-b113-7b6bcd189ba2)
+# @prompt id 8617bf49-39a9-4268-b113-7b6bcd189ba2
+GET {{url}}/articles/{{id}}
+
+###
+# @name createArticle
+POST {{url}}/articles
+content-type: {{contentType}}
+
+{
+    "title": "Article Test",
+    "desc": "Description of test article",
+    "content": "Content of test article"
+}
+
+###
+@createArticleId = {{createArticle.response.body.$.id}}
+GET {{url}}/articles/{{createArticleId}}
+
+### Update create article
+PUT {{url}}/articles/{{createArticleId}}
+content-type: {{contentType}}
+
+{
+    "title": "Article Test (updated)",
+    "desc": "Description of test article (updated)",
+    "content": "Content of test article (updated)"
+}
+
+###
+GET {{url}}/articles/{{createArticleId}}
+
+###
+# @prompt articleId Id of article that will be deleted
+DELETE {{url}}/articles/{{articleId}}
