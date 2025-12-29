@@ -6,7 +6,7 @@ clean:
 	rm -rf bin
 
 run:
-	go run ./cmd/main.go
+	go run ./cmd/api/main.go
 
 build: clean
 	@echo "Building..."

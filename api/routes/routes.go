@@ -10,6 +10,11 @@ import (
 
 func RegisterRoutes() *mux.Router {
 	r := mux.NewRouter()
+
+	// middlewares
+	r.Use(middlewares.PanicRecovery)
+	r.Use(middlewares.WrapHandlerWithLogging)
+
 	//index
 	r.HandleFunc("/", controllers.Index).Methods(http.MethodGet)
 	r.HandleFunc("/index", controllers.Index).Methods(http.MethodGet)
@@ -21,6 +26,5 @@ func RegisterRoutes() *mux.Router {
 	r.HandleFunc("/articles/{id}", controllers.UpdateArticle).Methods(http.MethodPut)
 	r.HandleFunc("/articles/{id}", controllers.DeleteArticle).Methods(http.MethodDelete)
 
-	r.Use(middlewares.WrapHandlerWithLogging)
 	return r
 }

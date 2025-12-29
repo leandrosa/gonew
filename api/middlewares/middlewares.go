@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -11,8 +12,20 @@ type loggingResponseWriter struct {
 	statusCode int
 }
 
+func (lrw *loggingResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
+}
+
+func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
+	if lrw.statusCode == 0 {
+		lrw.statusCode = http.StatusOK
+	}
+	return lrw.ResponseWriter.Write(b)
+}
+
 func NewLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
-	return &loggingResponseWriter{w, http.StatusOK}
+	return &loggingResponseWriter{ResponseWriter: w}
 }
 
 func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
@@ -32,4 +45,28 @@ func WrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 		statusCode := lrw.statusCode
 		log.Printf("<-- %d %s completed in %s", statusCode, http.StatusText(statusCode), time.Since(start))
 	})
+}
+
+// PanicRecoveryMiddleware recovers from panics
+func PanicRecovery(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				// Log the error
+				log.Printf("Panic recovered: %v", err)
+
+				// Return error to client
+				responseWithJSON(w, http.StatusInternalServerError, err)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// TODO: To move to another place to be reused and avoid duplicated code
+func responseWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(payload)
 }
